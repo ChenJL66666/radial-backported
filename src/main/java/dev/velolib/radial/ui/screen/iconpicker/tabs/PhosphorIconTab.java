@@ -47,8 +47,7 @@ public class PhosphorIconTab extends GridIconTab<PhosphorIconCache.PhosphorIcon>
         SlotRenderHelper.renderIcon(graphics, getIconId(icon), x, y, getSlotSize(), 0xFFFFFFFF, () -> null);
 
         if (hovered) {
-            graphics.drawTooltip(
-                    MinecraftClient.getInstance().textRenderer, Text.literal(icon.name()), mouseX, mouseY);
+            graphics.drawTooltip(MinecraftClient.getInstance().textRenderer, Text.literal(icon.name()), mouseX, mouseY);
         }
     }
 

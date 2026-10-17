@@ -1,11 +1,9 @@
 package dev.velolib.radial.ui.screen.iconpicker;
 
 import java.util.function.Consumer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 public interface IconTab {
@@ -17,7 +15,7 @@ public interface IconTab {
     // Render custom backgrounds or overlays (like the inventory tab does)
     void render(DrawContext graphics, int mouseX, int mouseY, float delta);
 
-    boolean mouseClicked(Click click, boolean doubled);
+    boolean mouseClicked(double mouseX, double mouseY, int button);
 
     void updateSearch(String query);
 
@@ -29,7 +27,7 @@ public interface IconTab {
     }
 
     // Lets the tab handle keyboard navigation before the screen's own focus handling
-    default boolean keyPressed(KeyInput event) {
+    default boolean keyPressed(int keyCode, int scancode, int modifiers) {
         return false;
     }
 }

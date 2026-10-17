@@ -17,7 +17,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,17 +26,15 @@ public class RadialClient implements ClientModInitializer {
     public static final String MOD_ID = "radial";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of(MOD_ID, "main"));
+    // 1.21.8 的按键类别是翻译键字符串（26.x 是 KeyBinding.Category 对象），沿用已有的分类键
+    private static final String CATEGORY = "key.category." + MOD_ID + ".main";
 
     public static final KeyBinding OPEN_RADIAL = KeyBindingHelper.registerKeyBinding(
             new KeyBinding("key." + MOD_ID + ".open", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY));
     public static final KeyBinding BACK_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key." + MOD_ID + ".back", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(), CATEGORY));
     public static final KeyBinding STOP_MACROS = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key." + MOD_ID + ".stop_macros",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
-            CATEGORY));
+            "key." + MOD_ID + ".stop_macros", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(), CATEGORY));
     public static final KeyBinding[] SLOT_KEYS = new KeyBinding[12];
 
     static {

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
@@ -94,10 +93,12 @@ public class KeybindPickerScreen extends Screen {
                         return false;
                     }
 
-                    String actionName =
-                            Text.translatable(key.getId()).getString().toLowerCase();
+                    String actionName = Text.translatable(key.getTranslationKey())
+                            .getString()
+                            .toLowerCase();
 
-                    String category = key.getCategory().getLabel().getString().toLowerCase();
+                    String category =
+                            Text.translatable(key.getCategory()).getString().toLowerCase();
 
                     return actionName.contains(q) || category.contains(q);
                 })
@@ -148,18 +149,28 @@ public class KeybindPickerScreen extends Screen {
         }
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, boolean hovered, float delta) {
+        public void render(
+                DrawContext graphics,
+                int index,
+                int y,
+                int x,
+                int entryWidth,
+                int entryHeight,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float delta) {
 
             MinecraftClient client = MinecraftClient.getInstance();
 
-            int left = getX();
-            int top = getY();
-            int right = left + getWidth();
-            int bottom = top + getHeight();
+            int left = x;
+            int top = y;
+            int right = left + entryWidth;
+            int bottom = top + entryHeight;
 
             graphics.fill(left, top + 1, right, bottom - 1, hovered ? 0x80FFFFFF : 0x40000000);
 
-            String actionName = Text.translatable(key.getId()).getString();
+            String actionName = Text.translatable(key.getTranslationKey()).getString();
 
             String boundKey = key.getBoundKeyLocalizedText().getString();
 
@@ -169,7 +180,7 @@ public class KeybindPickerScreen extends Screen {
 
             graphics.drawText(client.textRenderer, display, left + 8, textY, 0xFFFFFFFF, true);
 
-            Text category = key.getCategory().getLabel();
+            Text category = Text.translatable(key.getCategory());
 
             int categoryWidth = client.textRenderer.getWidth(category);
 
@@ -177,13 +188,13 @@ public class KeybindPickerScreen extends Screen {
         }
 
         @Override
-        public boolean mouseClicked(Click click, boolean doubleClick) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
-            if (click.button() != 0) {
+            if (button != 0) {
                 return false;
             }
 
-            onSelect.accept(key.getId());
+            onSelect.accept(key.getTranslationKey());
             onClose.run();
 
             return true;
@@ -191,7 +202,7 @@ public class KeybindPickerScreen extends Screen {
 
         @Override
         public Text getNarration() {
-            return Text.translatable(key.getId());
+            return Text.translatable(key.getTranslationKey());
         }
     }
 }

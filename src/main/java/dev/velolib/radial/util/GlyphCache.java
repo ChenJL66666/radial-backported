@@ -42,8 +42,8 @@ public final class GlyphCache {
         }
 
         if (resourceOpt.isPresent()) {
-            try (Reader reader =
-                    new BufferedReader(new InputStreamReader(resourceOpt.get().getInputStream(), StandardCharsets.UTF_8))) {
+            try (Reader reader = new BufferedReader(
+                    new InputStreamReader(resourceOpt.get().getInputStream(), StandardCharsets.UTF_8))) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                 JsonArray providers = json.getAsJsonArray("providers");
 

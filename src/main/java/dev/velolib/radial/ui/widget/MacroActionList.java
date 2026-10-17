@@ -9,11 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.cursor.StandardCursors;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -143,7 +141,8 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
 
     private void moveAction(int from, int to) {
         Collections.swap(this.slot.macros, from, to);
-        this.swapEntriesOnPositions(from, to);
+        // 1.21.8 没有 swapEntriesOnPositions，直接交换子项顺序即可
+        Collections.swap(this.children(), from, to);
     }
 
     private static String defaultValue(SlotMode mode) {
@@ -166,7 +165,8 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
      * The Y position of the floating dragged row, kept inside the visible list area.
      */
     private int getDraggedRowY() {
-        return (int) MathHelper.clamp(this.dragMouseY - this.dragGrabOffset, this.getY(), this.getBottom() - ROW_HEIGHT);
+        return (int)
+                MathHelper.clamp(this.dragMouseY - this.dragGrabOffset, this.getY(), this.getBottom() - ROW_HEIGHT);
     }
 
     /**
@@ -214,35 +214,35 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
     }
 
     @Override
-    public boolean mouseClicked(Click event, boolean doubleClick) {
-        if (event.button() == 0 && this.isMouseOver(event.x(), event.y())) {
-            if (this.getEntryAtPosition(event.x(), event.y()) instanceof ActionEntry entry
-                    && entry.isOverHandle(event.x(), event.y())) {
-                this.startDrag(entry, event.y());
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && this.isMouseOver(mouseX, mouseY)) {
+            if (this.getEntryAtPosition(mouseX, mouseY) instanceof ActionEntry entry
+                    && entry.isOverHandle(mouseX, mouseY)) {
+                this.startDrag(entry, mouseY);
                 return true;
             }
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(Click event, double dx, double dy) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
         if (this.draggedEntry != null) {
-            this.dragMouseY = event.y();
+            this.dragMouseY = mouseY;
             this.updateDragTarget();
             return true;
         }
-        return super.mouseDragged(event, dx, dy);
+        return super.mouseDragged(mouseX, mouseY, button, dx, dy);
     }
 
     @Override
-    public boolean mouseReleased(Click event) {
-        if (this.draggedEntry != null && event.button() == 0) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.draggedEntry != null && button == 0) {
             this.endDrag();
-            super.mouseReleased(event);
+            super.mouseReleased(mouseX, mouseY, button);
             return true;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     // --- Rendering ---
@@ -253,8 +253,8 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
             // Safety net in case the release event never reached the list (e.g. window lost focus).
             // Queries GLFW directly: Mouse#isLeftPressed is only updated while no screen is open.
             if (GLFW.glfwGetMouseButton(
-                                    MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT)
-                            == GLFW.GLFW_RELEASE) {
+                            MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT)
+                    == GLFW.GLFW_RELEASE) {
                 this.endDrag();
             } else {
                 this.autoScrollWhileDragging();
@@ -264,12 +264,9 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         super.renderWidget(graphics, mouseX, mouseY, delta);
 
         if (this.draggedEntry != null) {
-            graphics.setCursor(StandardCursors.RESIZE_NS);
         } else if (this.isMouseOver(mouseX, mouseY)) {
             if (this.getEntryAtPosition(mouseX, mouseY) instanceof ActionEntry hovered
-                    && hovered.isOverHandle(mouseX, mouseY)) {
-                graphics.setCursor(StandardCursors.RESIZE_NS);
-            }
+                    && hovered.isOverHandle(mouseX, mouseY)) {}
         }
     }
 
@@ -285,20 +282,64 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
             if (row == this.draggedEntry) {
                 this.draggedEntry.renderPlaceholder(graphics);
             } else if (row.getY() + row.getHeight() >= this.getY() && row.getY() <= this.getBottom()) {
-                row.render(graphics, -1, -1, false, delta);
+                row.render(graphics, 0, row.getY(), row.getX(), row.getWidth(), row.getHeight(), -1, -1, false, delta);
             }
         }
 
         // Draw the dragged row floating under the cursor, above the other rows
         int restingY = this.draggedEntry.getY();
         this.draggedEntry.setY(this.getDraggedRowY());
-        this.draggedEntry.render(graphics, -1, -1, true, delta);
+        this.draggedEntry.render(
+                graphics,
+                0,
+                this.draggedEntry.getY(),
+                this.draggedEntry.getX(),
+                this.draggedEntry.getWidth(),
+                this.draggedEntry.getHeight(),
+                -1,
+                -1,
+                true,
+                delta);
         this.draggedEntry.setY(restingY);
     }
 
     // --- Rows ---
 
-    public abstract static class Row extends ElementListWidget.Entry<Row> {}
+    public abstract static class Row extends ElementListWidget.Entry<Row> {
+        // 1.21.9+ 的 EntryListWidget.Entry 自带 getX/getY/getWidth/getHeight，1.21.8 没有，
+        // 这里在渲染时把行几何存下来，拖拽/占位绘制直接用。
+        private int boundsX;
+        private int boundsY;
+        private int boundsW;
+        private int boundsH;
+
+        protected void setBounds(int x, int y, int width, int height) {
+            this.boundsX = x;
+            this.boundsY = y;
+            this.boundsW = width;
+            this.boundsH = height;
+        }
+
+        public int getX() {
+            return this.boundsX;
+        }
+
+        public int getY() {
+            return this.boundsY;
+        }
+
+        public int getWidth() {
+            return this.boundsW;
+        }
+
+        public int getHeight() {
+            return this.boundsH;
+        }
+
+        public void setY(int y) {
+            this.boundsY = y;
+        }
+    }
 
     /**
      * The last row of the list. A full-width dashed button that appends a new action.
@@ -308,7 +349,18 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         private final AddActionButton button = new AddActionButton();
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, boolean hovered, float delta) {
+        public void render(
+                DrawContext graphics,
+                int index,
+                int y,
+                int x,
+                int entryWidth,
+                int entryHeight,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float delta) {
+            setBounds(x, y, entryWidth, entryHeight);
             this.button.active = MacroActionList.this.canAddAction();
             this.button.setPosition(this.getX(), this.getY());
             this.button.setDimensions(this.getWidth(), this.getHeight());
@@ -333,7 +385,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         }
 
         @Override
-        public void onClick(Click click, boolean doubled) {
+        public void onClick(double mouseX, double mouseY) {
             MacroActionList.this.addAction();
         }
 
@@ -359,9 +411,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
             graphics.drawCenteredTextWithShadow(
                     textRenderer, label, (left + right) / 2, top + (this.getHeight() - 8) / 2, textColor);
 
-            if (!enabled && this.isHovered()) {
-                graphics.setCursor(StandardCursors.NOT_ALLOWED);
-            }
+            if (!enabled && this.isHovered()) {}
         }
 
         @Override
@@ -370,8 +420,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         }
     }
 
-    private static void drawDashedBorder(
-            DrawContext graphics, int left, int top, int right, int bottom, int color) {
+    private static void drawDashedBorder(DrawContext graphics, int left, int top, int right, int bottom, int color) {
         for (int x = left; x < right; x += DASH_LENGTH + DASH_GAP) {
             int end = Math.min(x + DASH_LENGTH, right);
             graphics.fill(x, top, end, top + 1, color);
@@ -397,56 +446,58 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
             TextRenderer textRenderer = MacroActionList.this.client.textRenderer;
             this.mode = macro.mode();
 
-            this.valueBox = new TextFieldWidget(
-                    textRenderer,
-                    0,
-                    0,
-                    100,
-                    WIDGET_HEIGHT,
-                    Text.translatable("screen.radial.macro.column.value")) {
-                @Override
-                public void write(String input) {
-                    if (!ActionEntry.this.isDelay()) {
-                        super.write(input);
-                        return;
-                    }
+            this.valueBox =
+                    new TextFieldWidget(
+                            textRenderer,
+                            0,
+                            0,
+                            100,
+                            WIDGET_HEIGHT,
+                            Text.translatable("screen.radial.macro.column.value")) {
+                        @Override
+                        public void write(String input) {
+                            if (!ActionEntry.this.isDelay()) {
+                                super.write(input);
+                                return;
+                            }
 
-                    // Delays only accept seconds with up to two decimals. Invalid results are
-                    // reverted by writeValue; keep the cursor where it was when that happens.
-                    String previousValue = this.getText();
-                    int previousCursor = this.getCursor();
+                            // Delays only accept seconds with up to two decimals. Invalid results are
+                            // reverted by writeValue; keep the cursor where it was when that happens.
+                            String previousValue = this.getText();
+                            int previousCursor = this.getCursor();
 
-                    super.write(DelaySlotMode.filterChars(input));
+                            super.write(DelaySlotMode.filterChars(input));
 
-                    if (this.getText().equals(previousValue)) {
-                        this.setCursor(previousCursor, false);
-                        this.setSelectionEnd(previousCursor);
-                    }
-                }
-            };
+                            if (this.getText().equals(previousValue)) {
+                                this.setCursor(previousCursor, false);
+                                this.setSelectionEnd(previousCursor);
+                            }
+                        }
+                    };
             this.applyValueConstraints();
             this.valueBox.setText(macro.value() != null ? macro.value() : "");
             this.valueBox.setChangedListener(this::writeValue);
 
-            this.typeDropdown = new DropdownButtonWidget<>(
-                    0,
-                    0,
-                    TYPE_WIDTH,
-                    WIDGET_HEIGHT,
-                    MacroActionList.this.actionModes,
-                    this.mode,
-                    option -> fitToWidth(textRenderer, option.getTranslatedName(), TYPE_WIDTH - 18),
-                    this::changeMode,
-                    unused -> MacroActionList.this.dropdownHost.onDropdownOpened(this.getTypeDropdown())) {
-                @Override
-                public void closeMenu() {
-                    boolean wasOpen = this.isMenuOpen();
-                    super.closeMenu();
-                    if (wasOpen) {
-                        MacroActionList.this.dropdownHost.onDropdownClosed(this);
-                    }
-                }
-            };
+            this.typeDropdown =
+                    new DropdownButtonWidget<>(
+                            0,
+                            0,
+                            TYPE_WIDTH,
+                            WIDGET_HEIGHT,
+                            MacroActionList.this.actionModes,
+                            this.mode,
+                            option -> fitToWidth(textRenderer, option.getTranslatedName(), TYPE_WIDTH - 18),
+                            this::changeMode,
+                            unused -> MacroActionList.this.dropdownHost.onDropdownOpened(this.getTypeDropdown())) {
+                        @Override
+                        public void closeMenu() {
+                            boolean wasOpen = this.isMenuOpen();
+                            super.closeMenu();
+                            if (wasOpen) {
+                                MacroActionList.this.dropdownHost.onDropdownClosed(this);
+                            }
+                        }
+                    };
 
             this.pickerButton = ButtonWidget.builder(Text.literal("..."), unused -> this.openPicker())
                     .dimensions(0, 0, PICKER_WIDTH, WIDGET_HEIGHT)
@@ -482,9 +533,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         private void applyValueConstraints() {
             this.valueBox.setMaxLength(this.isDelay() ? DelaySlotMode.MAX_LENGTH : Integer.MAX_VALUE);
             this.valueBox.setPlaceholder(
-                    this.mode != null
-                            ? this.mode.getValueHint()
-                            : Text.translatable("screen.radial.editor.value"));
+                    this.mode != null ? this.mode.getValueHint() : Text.translatable("screen.radial.editor.value"));
         }
 
         private void changeMode(SlotMode newMode) {
@@ -519,9 +568,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         }
 
         private boolean isOverHandle(double mouseX, double mouseY) {
-            return this.isMouseOver(mouseX, mouseY)
-                    && mouseX >= this.getX()
-                    && mouseX < this.getX() + HANDLE_WIDTH;
+            return this.isMouseOver(mouseX, mouseY) && mouseX >= this.getX() && mouseX < this.getX() + HANDLE_WIDTH;
         }
 
         private void renderPlaceholder(DrawContext graphics) {
@@ -535,7 +582,18 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         }
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, boolean hovered, float delta) {
+        public void render(
+                DrawContext graphics,
+                int index,
+                int y,
+                int x,
+                int entryWidth,
+                int entryHeight,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float delta) {
+            setBounds(x, y, entryWidth, entryHeight);
             TextRenderer textRenderer = MacroActionList.this.client.textRenderer;
             boolean dragged = this == MacroActionList.this.draggedEntry;
 
@@ -613,7 +671,7 @@ public class MacroActionList extends ElementListWidget<MacroActionList.Row> {
         if (textRenderer.getWidth(text) <= maxWidth) return text;
 
         String ellipsis = "...";
-        return Text.literal(textRenderer.trimToWidth(text.getString(), maxWidth - textRenderer.getWidth(ellipsis))
-                + ellipsis);
+        return Text.literal(
+                textRenderer.trimToWidth(text.getString(), maxWidth - textRenderer.getWidth(ellipsis)) + ellipsis);
     }
 }

@@ -235,7 +235,8 @@ public class RadialConfigScreen {
                                                 () -> config.revealAnimation,
                                                 v -> config.revealAnimation = v)
                                         .controller(opt -> EnumControllerBuilder.create(opt)
-                                                .enumClass(RadialConfig.RevealAnimation.class))
+                                                .enumClass(RadialConfig.RevealAnimation.class)
+                                                .formatValue(RadialConfig.RevealAnimation::getDisplayName))
                                         .build())
                                 .option(Option.<Integer>createBuilder()
                                         .name(Text.translatable("screen.radial.config.reveal_duration_ms"))
@@ -277,7 +278,8 @@ public class RadialConfigScreen {
                                                 () -> config.activationMode,
                                                 v -> config.activationMode = v)
                                         .controller(opt -> EnumControllerBuilder.create(opt)
-                                                .enumClass(RadialConfig.ActivationMode.class))
+                                                .enumClass(RadialConfig.ActivationMode.class)
+                                                .formatValue(RadialConfig.ActivationMode::getDisplayName))
                                         .build())
                                 .option(Option.<Boolean>createBuilder()
                                         .name(Text.translatable("screen.radial.config.reset_cursor_on_submenu"))

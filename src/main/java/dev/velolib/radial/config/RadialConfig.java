@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dev.isxander.yacl3.api.NameableEnum;
 import dev.velolib.radial.RadialClient;
 import dev.velolib.radial.api.RadialSlot;
 import dev.velolib.radial.api.SlotMode;
@@ -229,7 +228,7 @@ public class RadialConfig {
         }
     }
 
-    public enum RevealAnimation implements NameableEnum {
+    public enum RevealAnimation {
         ZOOM("screen.radial.config.reveal_animation.zoom"),
         STAGGERED_CLOCKWISE("screen.radial.config.reveal_animation.staggered_clockwise"),
         STAGGERED_COUNTERCLOCKWISE("screen.radial.config.reveal_animation.staggered_counterclockwise"),
@@ -241,13 +240,12 @@ public class RadialConfig {
             this.displayName = Text.translatable(translationKey);
         }
 
-        @Override
         public Text getDisplayName() {
             return displayName;
         }
     }
 
-    public enum ActivationMode implements NameableEnum {
+    public enum ActivationMode {
         CLICK("screen.radial.config.activation_mode.click"),
         RELEASE("screen.radial.config.activation_mode.release"),
         SCROLL_CLICK("screen.radial.config.activation_mode.scroll_click"),
@@ -259,7 +257,6 @@ public class RadialConfig {
             this.displayName = Text.translatable(translationKey);
         }
 
-        @Override
         public Text getDisplayName() {
             return displayName;
         }

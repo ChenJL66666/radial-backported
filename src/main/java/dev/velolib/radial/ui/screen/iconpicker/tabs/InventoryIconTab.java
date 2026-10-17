@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -142,21 +141,25 @@ public class InventoryIconTab implements IconTab {
                 graphics.fill(x, y, x + INV_SLOT_SIZE, y + INV_SLOT_SIZE, 0x40FFFFFF);
                 if (stack != null && !stack.isEmpty()) {
                     graphics.drawTooltip(
-                            mc.textRenderer, Screen.getTooltipFromItem(mc, stack), stack.getTooltipData(), mouseX, mouseY);
+                            mc.textRenderer,
+                            Screen.getTooltipFromItem(mc, stack),
+                            stack.getTooltipData(),
+                            mouseX,
+                            mouseY);
                 }
             }
         }
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (click.button() != 0) return false;
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return false;
 
         int bgX = backgroundX();
         int bgY = backgroundY();
 
         for (InvSlot slot : SLOTS) {
-            if (isHovered(click.x(), click.y(), bgX + slot.x(), bgY + slot.y())) {
+            if (isHovered(mouseX, mouseY, bgX + slot.x(), bgY + slot.y())) {
                 onSelect.accept(slot.iconId());
                 onClose.run();
                 return true;

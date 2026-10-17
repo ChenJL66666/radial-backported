@@ -9,7 +9,6 @@ import dev.velolib.radial.ui.widget.DropdownButtonWidget;
 import dev.velolib.radial.ui.widget.DropdownMenuWidget;
 import java.util.List;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -194,7 +193,8 @@ public class SlotEditorScreen extends Screen {
                     Text.literal(
                             e.getMessage() != null
                                     ? e.getMessage()
-                                    : Text.translatable("screen.radial.editor.error.unknown").getString()));
+                                    : Text.translatable("screen.radial.editor.error.unknown")
+                                            .getString()));
         }
     }
 
@@ -241,7 +241,8 @@ public class SlotEditorScreen extends Screen {
                     Text.literal(
                             e.getMessage() != null
                                     ? e.getMessage()
-                                    : Text.translatable("screen.radial.editor.error.unknown").getString()));
+                                    : Text.translatable("screen.radial.editor.error.unknown")
+                                            .getString()));
         }
     }
 
@@ -319,22 +320,22 @@ public class SlotEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.modeDropdown != null && this.modeDropdown.isMenuOpen()) {
             DropdownMenuWidget<SlotMode> floatingMenu = this.modeDropdown.getActiveMenu();
 
-            if (floatingMenu.isMouseOver(click.x(), click.y())) {
-                floatingMenu.mouseClicked(click, doubled);
+            if (floatingMenu.isMouseOver(mouseX, mouseY)) {
+                floatingMenu.mouseClicked(mouseX, mouseY, button);
                 return true;
             } else //noinspection StatementWithEmptyBody
-            if (this.modeDropdown.isMouseOver(click.x(), click.y())) {
+            if (this.modeDropdown.isMouseOver(mouseX, mouseY)) {
                 // Let the click fall through so the button can close itself
             } else {
                 this.modeDropdown.closeMenu();
             }
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

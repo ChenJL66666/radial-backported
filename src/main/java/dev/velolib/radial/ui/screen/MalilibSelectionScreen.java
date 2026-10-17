@@ -9,7 +9,6 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
@@ -176,7 +175,11 @@ public class MalilibSelectionScreen extends Screen {
 
         if (actionsByMod.isEmpty()) {
             graphics.drawCenteredTextWithShadow(
-                    textRenderer, Text.translatable("screen.radial.malilib_picker.empty"), width / 2, height / 2, 0xFF555555);
+                    textRenderer,
+                    Text.translatable("screen.radial.malilib_picker.empty"),
+                    width / 2,
+                    height / 2,
+                    0xFF555555);
 
             super.render(graphics, mouseX, mouseY, delta);
 
@@ -218,14 +221,24 @@ public class MalilibSelectionScreen extends Screen {
         }
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, boolean hovered, float delta) {
+        public void render(
+                DrawContext graphics,
+                int index,
+                int y,
+                int x,
+                int entryWidth,
+                int entryHeight,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float delta) {
 
             MinecraftClient client = MinecraftClient.getInstance();
 
-            int left = getX();
-            int top = getY();
-            int right = left + getWidth();
-            int bottom = top + getHeight();
+            int left = x;
+            int top = y;
+            int right = left + entryWidth;
+            int bottom = top + entryHeight;
 
             graphics.fill(left, top + 1, right, bottom - 1, hovered ? 0x80FFFFFF : 0x40000000);
 
@@ -241,9 +254,9 @@ public class MalilibSelectionScreen extends Screen {
         }
 
         @Override
-        public boolean mouseClicked(Click click, boolean doubleClick) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
-            if (click.button() != 0) {
+            if (button != 0) {
                 return false;
             }
 

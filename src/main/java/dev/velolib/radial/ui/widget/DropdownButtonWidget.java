@@ -6,7 +6,6 @@ import java.util.function.Function;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
@@ -62,16 +61,16 @@ public class DropdownButtonWidget<T> extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseClicked(final Click click, final boolean doubleClick) {
-        if (this.active && this.isMouseOver(click.x(), click.y())) {
-            this.onClick(click, doubleClick);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.active && this.isMouseOver(mouseX, mouseY)) {
+            this.onClick(mouseX, mouseY);
             return true;
         }
-        return super.mouseClicked(click, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public void onClick(final Click click, final boolean doubleClick) {
+    public void onClick(double mouseX, double mouseY) {
         // PLAY SOUND: Triggers the standard click noise when toggling the menu
         this.playDownSound(MinecraftClient.getInstance().getSoundManager());
 

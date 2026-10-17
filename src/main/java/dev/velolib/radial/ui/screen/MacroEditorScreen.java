@@ -8,13 +8,12 @@ import dev.velolib.radial.ui.widget.DropdownMenuWidget;
 import dev.velolib.radial.ui.widget.MacroActionList;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 public class MacroEditorScreen extends Screen implements MacroActionList.DropdownHost {
 
@@ -158,21 +157,21 @@ public class MacroEditorScreen extends Screen implements MacroActionList.Dropdow
     // --- Input ---
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         DropdownMenuWidget<SlotMode> menu = this.getOpenMenu();
         if (menu != null) {
-            if (menu.isMouseOver(click.x(), click.y())) {
-                menu.mouseClicked(click, doubled);
+            if (menu.isMouseOver(mouseX, mouseY)) {
+                menu.mouseClicked(mouseX, mouseY, button);
                 return true;
             }
 
             // Clicking the owning button lets it toggle itself closed
-            if (!this.openDropdown.isMouseOver(click.x(), click.y())) {
+            if (!this.openDropdown.isMouseOver(mouseX, mouseY)) {
                 this.closeDropdown();
             }
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -191,12 +190,12 @@ public class MacroEditorScreen extends Screen implements MacroActionList.Dropdow
     }
 
     @Override
-    public boolean keyPressed(KeyInput event) {
-        if (event.isEscape() && this.openDropdown != null) {
+    public boolean keyPressed(int keyCode, int scancode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.openDropdown != null) {
             this.closeDropdown();
             return true;
         }
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scancode, modifiers);
     }
 
     @Override
