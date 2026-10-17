@@ -196,7 +196,8 @@ public class DonutRenderer implements AutoCloseable {
      * gracefully discard their results. GPU texture registration is safely delegated back
      * to the main Minecraft thread.
      */
-    private void regenerateTextures(int targetTexSize, int count, float inner, float outer, float resScale, RadialConfig config) {
+    private void regenerateTextures(
+            int targetTexSize, int count, float inner, float outer, float resScale, RadialConfig config) {
         final long currentGenId = ++this.generationId;
 
         final int bgColor = config.backgroundColor.getRGB();

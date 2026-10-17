@@ -1,17 +1,16 @@
 package dev.velolib.radial.ui.screen.iconpicker;
 
 import dev.velolib.radial.util.IconHistory;
+import dev.velolib.radial.util.InputKeys;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 
 public abstract class GridIconTab<T> implements IconTab {
@@ -145,17 +144,17 @@ public abstract class GridIconTab<T> implements IconTab {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         return false; /* Managed by listWidget */
     }
 
     @Override
-    public boolean keyPressed(KeyInput event) {
+    public boolean keyPressed(int keyCode, int scancode, int modifiers) {
         if (currentResults.isEmpty() || listWidget == null) {
             return false;
         }
 
-        if (event.isEnter()) {
+        if (InputKeys.isEnter(keyCode)) {
             // Without a query or cursor, Enter would just grab whatever happens to be listed first
             if (cursor < 0 && query.isEmpty()) {
                 return false;
@@ -168,14 +167,14 @@ public abstract class GridIconTab<T> implements IconTab {
         int last = currentResults.size() - 1;
         int next;
 
-        if (event.isDown()) {
+        if (InputKeys.isDown(keyCode)) {
             next = cursor < 0 ? 0 : Math.min(cursor + columns, last);
-        } else if (event.isUp() && cursor >= 0) {
+        } else if (InputKeys.isUp(keyCode) && cursor >= 0) {
             // Moving up past the first row hands focus back to the search bar
             next = cursor - columns;
-        } else if (event.isRight() && cursor >= 0) {
+        } else if (InputKeys.isRight(keyCode) && cursor >= 0) {
             next = Math.min(cursor + 1, last);
-        } else if (event.isLeft() && cursor >= 0) {
+        } else if (InputKeys.isLeft(keyCode) && cursor >= 0) {
             next = Math.max(cursor - 1, 0);
         } else {
             return false;
@@ -207,12 +206,6 @@ public abstract class GridIconTab<T> implements IconTab {
             return cols * SLOT_SIZE;
         }
 
-        @Override
-        protected boolean isEntrySelectionAllowed() {
-            // Clicks act on single icons, so a whole-row selection box would be misleading
-            return false;
-        }
-
         private void centerOnRow(int row) {
             if (row >= 0 && row < children().size()) {
                 centerScrollOn(children().get(row));
@@ -221,7 +214,7 @@ public abstract class GridIconTab<T> implements IconTab {
 
         private void scrollToRow(int row) {
             if (row >= 0 && row < children().size()) {
-                scrollTo(children().get(row));
+                centerScrollOn(children().get(row));
             }
         }
 
@@ -258,60 +251,75 @@ public abstract class GridIconTab<T> implements IconTab {
         private final int startIndex;
         private final List<T> items;
 
+        private int boundsX;
+        private int boundsY;
+
         private IconGridEntry(int startIndex, List<T> items) {
             this.startIndex = startIndex;
             this.items = items;
         }
 
         @Override
-        public void render(DrawContext graphics, int mouseX, int mouseY, boolean hovered, float delta) {
-            int left = getContentX();
-            int top = getContentY();
+        public void render(
+                DrawContext graphics,
+                int index,
+                int y,
+                int x,
+                int entryWidth,
+                int entryHeight,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float delta) {
+            // 1.21.8 的 Entry 没有自报坐标的方法，这里把行位置记下来给 mouseClicked 用
+            this.boundsX = x;
+            this.boundsY = y;
 
             int verticalOffset = Math.max(0, (ROW_HEIGHT - SLOT_SIZE) / 2);
 
             for (int i = 0; i < items.size(); i++) {
-                int x = left + i * SLOT_SIZE;
-                int y = top + verticalOffset;
+                int slotX = x + i * SLOT_SIZE;
+                int slotY = y + verticalOffset;
                 T item = items.get(i);
                 String iconId = getIconId(item);
 
-                boolean slotHovered = mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE;
+                boolean slotHovered =
+                        mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE;
                 boolean atCursor = startIndex + i == cursor;
 
                 if (slotHovered || atCursor) {
-                    graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x40FFFFFF);
+                    graphics.fill(slotX, slotY, slotX + SLOT_SIZE, slotY + SLOT_SIZE, 0x40FFFFFF);
                 }
 
-                renderIcon(graphics, x, y, mouseX, mouseY, item, slotHovered);
+                renderIcon(graphics, slotX, slotY, mouseX, mouseY, item, slotHovered);
 
                 if (iconId.equals(currentId)) {
-                    drawOutline(graphics, x, y, SLOT_SIZE, SLOT_SIZE, CURRENT_OUTLINE_COLOR);
+                    drawOutline(graphics, slotX, slotY, SLOT_SIZE, SLOT_SIZE, CURRENT_OUTLINE_COLOR);
                 } else if (atCursor) {
-                    drawOutline(graphics, x, y, SLOT_SIZE, SLOT_SIZE, CURSOR_OUTLINE_COLOR);
+                    drawOutline(graphics, slotX, slotY, SLOT_SIZE, SLOT_SIZE, CURSOR_OUTLINE_COLOR);
                 }
 
                 if (IconHistory.isFavorite(iconId)) {
                     // A small corner mark, drawn after the icon so items can't cover it
-                    graphics.fill(x + SLOT_SIZE - 4, y + 1, x + SLOT_SIZE - 1, y + 4, FAVORITE_COLOR);
+                    graphics.fill(slotX + SLOT_SIZE - 4, slotY + 1, slotX + SLOT_SIZE - 1, slotY + 4, FAVORITE_COLOR);
                 }
             }
         }
 
         @Override
-        public boolean mouseClicked(Click event, boolean doubleClick) {
-            if (event.button() != 0 && event.button() != 1) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button != 0 && button != 1) {
                 return false;
             }
 
             int verticalOffset = Math.max(0, (ROW_HEIGHT - SLOT_SIZE) / 2);
 
             for (int i = 0; i < items.size(); i++) {
-                int x = getContentX() + i * SLOT_SIZE;
-                int y = getContentY() + verticalOffset;
+                int x = this.boundsX + i * SLOT_SIZE;
+                int y = this.boundsY + verticalOffset;
 
-                if (event.x() >= x && event.x() < x + SLOT_SIZE && event.y() >= y && event.y() < y + SLOT_SIZE) {
-                    if (event.button() == 1) {
+                if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
+                    if (button == 1) {
                         IconHistory.toggleFavorite(getIconId(items.get(i)));
                         onFavoritesChanged();
                     } else {

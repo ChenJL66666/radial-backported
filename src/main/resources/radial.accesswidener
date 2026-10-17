@@ -1,2 +1,2 @@
 accessWidener v1 named
-accessible method net/minecraft/client/Keyboard processF3 (Lnet/minecraft/client/input/KeyInput;)Z
+accessible method net/minecraft/client/Keyboard processF3 (I)Z

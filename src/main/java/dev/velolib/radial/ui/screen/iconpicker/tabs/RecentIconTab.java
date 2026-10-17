@@ -60,8 +60,7 @@ public class RecentIconTab extends GridIconTab<String> {
     }
 
     @Override
-    protected void renderIcon(
-            DrawContext graphics, int x, int y, int mouseX, int mouseY, String id, boolean hovered) {
+    protected void renderIcon(DrawContext graphics, int x, int y, int mouseX, int mouseY, String id, boolean hovered) {
         SlotRenderHelper.renderIcon(graphics, id, x, y, getSlotSize(), 0xFFFFFFFF, () -> getStack(id));
 
         if (hovered) {
@@ -115,7 +114,8 @@ public class RecentIconTab extends GridIconTab<String> {
             if (effectId != null) {
                 return Registries.STATUS_EFFECT
                         .getOptionalValue(effectId)
-                        .map(effect -> Text.translatable(effect.getTranslationKey()).getString())
+                        .map(effect ->
+                                Text.translatable(effect.getTranslationKey()).getString())
                         .orElse(id);
             }
             return id;

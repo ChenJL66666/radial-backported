@@ -21,7 +21,7 @@ public class KeyMappingMixin {
 
             KeyBinding self = (KeyBinding) (Object) this;
 
-            if (self.getCategory().equals(KeyBinding.Category.MOVEMENT)) {
+            if ("key.categories.movement".equals(self.getCategory())) {
                 cir.setReturnValue(RadialClient.isPhysicallyDown(KeyBindingHelper.getBoundKeyOf(self)));
             }
         }

@@ -12,10 +12,8 @@ import java.util.Objects;
 import java.util.Stack;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -267,8 +265,7 @@ public class RadialScreen extends Screen {
             float slotX = (float) (cx + Math.cos(slotAngle) * finalRadius);
             float slotY = (float) (cy + Math.sin(slotAngle) * finalRadius);
 
-            float scale = revealEase
-                    * (config.enableHoverAnimation ? 1.0F + SLOT_HOVER_SCALE * smoothedHover : 1.0F);
+            float scale = revealEase * (config.enableHoverAnimation ? 1.0F + SLOT_HOVER_SCALE * smoothedHover : 1.0F);
 
             graphics.getMatrices().pushMatrix();
             graphics.getMatrices().translate(slotX, slotY);
@@ -461,9 +458,9 @@ public class RadialScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (hoveredSlot != -1) {
-            if (click.button() == 0) {
+            if (button == 0) {
                 if (isSubmenu() && hoveredSlot == 0) {
                     goBack();
                     return true;
@@ -474,7 +471,7 @@ public class RadialScreen extends Screen {
                     performAction(slot);
                     return true;
                 }
-            } else if (click.button() == 1) {
+            } else if (button == 1) {
                 if (isSubmenu() && hoveredSlot == 0) {
                     return true; // Right-clicking "Back" does nothing
                 }
@@ -487,18 +484,18 @@ public class RadialScreen extends Screen {
             }
         }
 
-        if (click.button() == 0) {
+        if (button == 0) {
             close();
             return true;
         }
 
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyInput event) {
+    public boolean keyPressed(int keyCode, int scancode, int modifiers) {
         // 1. Check if the "Back" key was pressed
-        if (RadialClient.BACK_KEY.matchesKey(event)) {
+        if (RadialClient.BACK_KEY.matchesKey(keyCode, scancode)) {
             if (isSubmenu()) {
                 goBack();
                 return true;
@@ -507,7 +504,7 @@ public class RadialScreen extends Screen {
 
         // 2. Check if any of the Slot 1-12 keys were pressed
         for (int i = 0; i < RadialClient.SLOT_KEYS.length; i++) {
-            if (RadialClient.SLOT_KEYS[i].matchesKey(event)) {
+            if (RadialClient.SLOT_KEYS[i].matchesKey(keyCode, scancode)) {
                 if (i < currentSlotCount && i < activeSlots.size()) {
                     performAction(activeSlots.get(i));
                     return true;
@@ -516,7 +513,7 @@ public class RadialScreen extends Screen {
         }
 
         // Pass any other keys (like ESC) to the default screen handler
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scancode, modifiers);
     }
 
     @Override

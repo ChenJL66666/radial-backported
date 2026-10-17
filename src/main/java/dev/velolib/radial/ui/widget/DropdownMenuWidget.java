@@ -5,7 +5,6 @@ import java.util.function.Function;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -65,9 +64,9 @@ public class DropdownMenuWidget<T> extends ClickableWidget {
     }
 
     @Override
-    public boolean mouseClicked(final Click click, final boolean doubleClick) {
-        if (this.isMouseOver(click.x(), click.y())) {
-            this.onClick(click, doubleClick);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.isMouseOver(mouseX, mouseY)) {
+            this.onClick(mouseX, mouseY);
             return true;
         }
 
@@ -76,8 +75,7 @@ public class DropdownMenuWidget<T> extends ClickableWidget {
     }
 
     @Override
-    public void onClick(final Click click, final boolean doubleClick) {
-        double mouseY = click.y();
+    public void onClick(double mouseX, double mouseY) {
 
         int index = (int) ((mouseY - getY() + this.scrollAmount) / itemHeight);
 

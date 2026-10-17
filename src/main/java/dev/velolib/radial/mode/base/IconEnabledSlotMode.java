@@ -106,13 +106,13 @@ public abstract class IconEnabledSlotMode implements SlotMode {
 
         // Browse Button (setText runs the responder, which updates the slot)
         ButtonWidget browseIconButton = ButtonWidget.builder(
-                        Text.translatable("screen.radial.editor.browse"),
-                        unused -> MinecraftClient.getInstance().setScreen(new IconPickerScreen(screen, slot.itemId, id -> {
-                            iconField.setText(id);
-                            slot.itemId = id;
-                            slot.clearCache();
-                            updateIconFieldState(iconField, colorField, id);
-                        })))
+                        Text.translatable("screen.radial.editor.browse"), unused -> MinecraftClient.getInstance()
+                                .setScreen(new IconPickerScreen(screen, slot.itemId, id -> {
+                                    iconField.setText(id);
+                                    slot.itemId = id;
+                                    slot.clearCache();
+                                    updateIconFieldState(iconField, colorField, id);
+                                })))
                 .dimensions(0, 0, BUTTON_WIDTH, ROW_HEIGHT)
                 .build();
         inputRow.add(browseIconButton);
@@ -138,8 +138,7 @@ public abstract class IconEnabledSlotMode implements SlotMode {
 
         // 3. Tint color for text-based icons
         DirectionalLayoutWidget colorGroup = DirectionalLayoutWidget.vertical().spacing(2);
-        colorGroup.add(
-                new TextWidget(Text.translatable("screen.radial.editor.icon_color"), textRenderer));
+        colorGroup.add(new TextWidget(Text.translatable("screen.radial.editor.icon_color"), textRenderer));
         colorGroup.add(colorField);
         container.add(colorGroup);
     }
@@ -158,8 +157,7 @@ public abstract class IconEnabledSlotMode implements SlotMode {
         colorField.setChangedListener(v -> {
             Integer color = RadialSlot.parseIconColor(v);
             boolean valid = v.isBlank() || color != null;
-            colorField.setEditableColor(
-                    valid ? TextFieldWidget.DEFAULT_EDITABLE_COLOR : INVALID_TEXT_COLOR);
+            colorField.setEditableColor(valid ? TextFieldWidget.DEFAULT_EDITABLE_COLOR : INVALID_TEXT_COLOR);
 
             // Invalid input leaves the last valid color in place until it's fixed
             if (valid) {
@@ -171,12 +169,10 @@ public abstract class IconEnabledSlotMode implements SlotMode {
         return colorField;
     }
 
-    private static void updateIconFieldState(
-            TextFieldWidget iconField, TextFieldWidget colorField, String iconId) {
+    private static void updateIconFieldState(TextFieldWidget iconField, TextFieldWidget colorField, String iconId) {
         boolean valid = SlotRenderHelper.isValidIconId(iconId);
         iconField.setEditableColor(valid ? TextFieldWidget.DEFAULT_EDITABLE_COLOR : INVALID_TEXT_COLOR);
-        iconField.setTooltip(
-                valid ? null : Tooltip.of(Text.translatable("screen.radial.editor.icon.invalid")));
+        iconField.setTooltip(valid ? null : Tooltip.of(Text.translatable("screen.radial.editor.icon.invalid")));
 
         boolean tintable = SlotRenderHelper.isTintable(iconId);
         colorField.active = tintable;

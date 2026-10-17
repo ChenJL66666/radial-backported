@@ -33,14 +33,14 @@
     "radial.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.18.1",
-    "minecraft": "~1.21.11",
+    "fabricloader": ">=0.17.3",
+    "minecraft": "~1.21.8",
     "java": ">=21",
     "fabric-api": "*"
   },
   "suggests": {
-    "yet_another_config_lib_v3": ">=3.8.2+1.21.11-fabric",
-    "modmenu": ">=17.0.0",
+    "yet_another_config_lib_v3": ">=3.8.2+1.21.6-fabric",
+    "modmenu": ">=15.0.2",
     "malilib": "*"
   },
   "custom": {

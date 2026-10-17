@@ -24,10 +24,8 @@ import net.minecraft.util.Identifier;
 
 public final class SlotRenderHelper {
 
-    public static final Identifier SLOT_TEXTURE =
-            Identifier.of("minecraft", "gamemode_switcher/slot");
-    public static final Identifier SELECTION_TEXTURE =
-            Identifier.of("minecraft", "gamemode_switcher/selection");
+    public static final Identifier SLOT_TEXTURE = Identifier.of("minecraft", "gamemode_switcher/slot");
+    public static final Identifier SELECTION_TEXTURE = Identifier.of("minecraft", "gamemode_switcher/selection");
 
     public static final String PHOSPHOR_PREFIX = "radial:icon.";
     public static final String GLYPH_PREFIX = "radial:glyph.";
@@ -117,8 +115,7 @@ public final class SlotRenderHelper {
 
             RegistryWrapper.WrapperLookup registryLookup = client.world.getRegistryManager();
 
-            ItemStringReader.ItemResult result =
-                    new ItemStringReader(registryLookup).consume(new StringReader(itemId));
+            ItemStringReader.ItemResult result = new ItemStringReader(registryLookup).consume(new StringReader(itemId));
 
             ItemStack stack = new ItemStack(result.item(), 1);
             stack.applyUnvalidatedChanges(result.components());
@@ -208,13 +205,7 @@ public final class SlotRenderHelper {
      * @param itemStack supplies the stack for plain item ids, letting callers cache the parsed stack
      */
     public static void renderIcon(
-            DrawContext graphics,
-            String iconId,
-            int x,
-            int y,
-            int size,
-            int argb,
-            Supplier<ItemStack> itemStack) {
+            DrawContext graphics, String iconId, int x, int y, int size, int argb, Supplier<ItemStack> itemStack) {
         MinecraftClient client = MinecraftClient.getInstance();
 
         // --- Phosphor Icon ---
@@ -224,8 +215,7 @@ public final class SlotRenderHelper {
                 return;
             }
 
-            Text component =
-                    Text.literal(icon.character()).setStyle(Style.EMPTY.withFont(PhosphorIconCache.FONT));
+            Text component = Text.literal(icon.character()).setStyle(Style.EMPTY.withFont(PhosphorIconCache.FONT));
 
             // The Phosphor font's glyphs are centered on the baseline, so the box center is the text origin
             int textX = x + Math.round((size - client.textRenderer.getWidth(component)) / 2.0F);
@@ -255,8 +245,7 @@ public final class SlotRenderHelper {
                 // Drawn at the sprite's native 18px so it stays crisp
                 int offset = (size - 18) / 2;
                 // Yarn 1.21.11 DrawContext has no tinted gui-sprite overload; draw untinted like EffectIconTab
-                graphics.drawGuiTexture(
-                        RenderPipelines.GUI_TEXTURED, effectSprite(id), x + offset, y + offset, 18, 18);
+                graphics.drawGuiTexture(RenderPipelines.GUI_TEXTURED, effectSprite(id), x + offset, y + offset, 18, 18);
             });
             return;
         }

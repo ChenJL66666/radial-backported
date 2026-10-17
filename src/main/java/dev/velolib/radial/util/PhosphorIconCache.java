@@ -15,13 +15,11 @@ import java.util.Optional;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.util.Identifier;
 
 public final class PhosphorIconCache {
 
-    public static final StyleSpriteSource FONT =
-            new StyleSpriteSource.Font(Identifier.of("radial", "phosphor"));
+    public static final Identifier FONT = Identifier.of("radial", "phosphor");
 
     private static final Gson GSON = new Gson();
 

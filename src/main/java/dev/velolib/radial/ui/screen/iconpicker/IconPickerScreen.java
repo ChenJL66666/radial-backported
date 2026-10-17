@@ -5,14 +5,13 @@ import dev.velolib.radial.util.IconHistory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 public class IconPickerScreen extends Screen {
     private final Screen parent;
@@ -126,32 +125,32 @@ public class IconPickerScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyInput event) {
+    public boolean keyPressed(int keyCode, int scancode, int modifiers) {
         // Ctrl+Tab / Ctrl+Shift+Tab cycle through the tabs
-        if (event.isTab() && event.hasCtrl()) {
-            int step = event.hasShift() ? -1 : 1;
+        if (keyCode == GLFW.GLFW_KEY_TAB && hasControlDown()) {
+            int step = hasShiftDown() ? -1 : 1;
             setTab(tabs.get(Math.floorMod(tabs.indexOf(currentTab) + step, tabs.size())));
             return true;
         }
 
         // The tab gets first pick so arrows and Enter drive the icon grid even while typing a search
-        if (currentTab.keyPressed(event)) {
+        if (currentTab.keyPressed(keyCode, scancode, modifiers)) {
             return true;
         }
 
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scancode, modifiers);
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (currentTab.mouseClicked(click, doubled)) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (currentTab.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
-        boolean handled = super.mouseClicked(click, doubled);
+        boolean handled = super.mouseClicked(mouseX, mouseY, button);
 
         // Right-clicking to favorite focuses the icon list; hand focus back so typing keeps searching
-        if (click.button() == 1 && searchField != null && searchField.visible) {
+        if (button == 1 && searchField != null && searchField.visible) {
             setFocused(searchField);
         }
 

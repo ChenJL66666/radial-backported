@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.DirectionalLayoutWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.ScreenshotRecorder;
@@ -25,16 +24,15 @@ public class KeybindSlotMode extends IconEnabledSlotMode {
     static {
         // TODO: add crash debug key
 
-        SPECIAL_ACTIONS.put(new KeyBinding("key.screenshot", GLFW.GLFW_KEY_F2, KeyBinding.Category.MISC), client -> {
+        SPECIAL_ACTIONS.put(new KeyBinding("key.screenshot", GLFW.GLFW_KEY_F2, "key.categories.misc"), client -> {
             ScreenshotRecorder.saveScreenshot(client.runDirectory, client.getFramebuffer(), message -> client.inGameHud
                     .getChatHud()
                     .addMessage(message));
         });
 
-        SPECIAL_ACTIONS.put(
-                new KeyBinding("key.debug.overlay", GLFW.GLFW_KEY_F3, KeyBinding.Category.DEBUG), client -> {
-                    client.keyboard.processF3(new KeyInput(GLFW.GLFW_KEY_F3, 0, 0));
-                });
+        SPECIAL_ACTIONS.put(new KeyBinding("key.debug.overlay", GLFW.GLFW_KEY_F3, "key.categories.misc"), client -> {
+            client.keyboard.processF3(GLFW.GLFW_KEY_F3);
+        });
     }
 
     @Override
@@ -70,22 +68,21 @@ public class KeybindSlotMode extends IconEnabledSlotMode {
         MinecraftClient client = MinecraftClient.getInstance();
 
         for (HashMap.Entry<KeyBinding, Consumer<MinecraftClient>> entry : SPECIAL_ACTIONS.entrySet()) {
-            if (entry.getKey().getId().equals(slot.value)) {
+            if (entry.getKey().getTranslationKey().equals(slot.value)) {
                 entry.getValue().accept(client);
                 return;
             }
         }
 
         for (KeyBinding key : client.options.allKeys) {
-            if (key.getId().equals(slot.value)) {
+            if (key.getTranslationKey().equals(slot.value)) {
                 // SAFETY CHECK: Abort if it's an internal radial key
                 if (dev.velolib.radial.RadialClient.isRadialInternalKey(key)) return;
 
                 if (slot.value.startsWith("key.debug")) {
                     InputUtil.Key inputKey = KeyBindingHelper.getBoundKeyOf(key);
                     int keyCode = inputKey.getCode();
-                    var dummyEvent = new KeyInput(keyCode, 0, 0);
-                    client.keyboard.processF3(dummyEvent);
+                    client.keyboard.processF3(keyCode);
                 }
 
                 RadialClient.scheduleKeyPress(key);

@@ -39,13 +39,7 @@ public class GlyphIconTab extends GridIconTab<GlyphCache.Glyph> {
 
     @Override
     protected void renderIcon(
-            DrawContext graphics,
-            int x,
-            int y,
-            int mouseX,
-            int mouseY,
-            GlyphCache.Glyph glyph,
-            boolean hovered) {
+            DrawContext graphics, int x, int y, int mouseX, int mouseY, GlyphCache.Glyph glyph, boolean hovered) {
         SlotRenderHelper.renderIcon(graphics, getIconId(glyph), x, y, getSlotSize(), 0xFFFFFFFF, () -> null);
 
         if (hovered) {
