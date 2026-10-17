@@ -3,7 +3,8 @@ on:
   push:
     branches: [ "fabric-1.21.8" ]
   pull_request:
-    branches: [ "fabric-1.21.8" ]
+    # PRs for this line are opened against fabric-1.21.11, so that base must be listed too
+    branches: [ "fabric-1.21.8", "fabric-1.21.11" ]
   workflow_dispatch:
 
 jobs:
